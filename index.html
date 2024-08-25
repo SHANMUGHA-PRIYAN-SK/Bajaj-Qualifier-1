@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Roll Number</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
+        }
+        textarea, button, select {
+            margin: 10px 0;
+            width: 100%;
+        }
+        .response {
+            margin-top: 20px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>REST API Interaction</h1>
+
+    <!-- JSON Input Field -->
+    <textarea id="jsonInput" rows="4" cols="50" placeholder='Enter JSON data like { "data": ["A", "C", "z"] }'></textarea>
+    <br>
+    <button id="submitBtn">Submit</button>
+
+    <!-- Multi-select dropdown to filter response -->
+    <select id="filterOptions" multiple>
+        <option value="alphabets">Alphabets</option>
+        <option value="numbers">Numbers</option>
+        <option value="highest_lowercase_alphabet">Highest Lowercase Alphabet</option>
+    </select>
+
+    <!-- Response Display Area -->
+    <div class="response" id="responseDisplay"></div>
+
+    <script>
+        document.getElementById('submitBtn').addEventListener('click', async () => {
+            const jsonInput = document.getElementById('jsonInput').value;
+            const responseDisplay = document.getElementById('responseDisplay');
+            responseDisplay.innerHTML = '';
+
+            try {
+                
+                const payload = JSON.parse(jsonInput);
+
+                // Replace the URL with your actual REST API endpoint
+                const response = await fetch('https://sepolia.infura.io/v3/f167fd5498fa4d51936b1dc2d4e6660b', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Get selected filter options
+                const selectedOptions = Array.from(document.getElementById('filterOptions').selectedOptions)
+                                            .map(option => option.value);
+
+                // Filter the response based on selected options
+                let filteredResponse = {};
+                selectedOptions.forEach(option => {
+                    if (data[option]) {
+                        filteredResponse[option] = data[option];
+                    }
+                });
+
+                // Display the filtered response
+                responseDisplay.innerHTML = JSON.stringify(filteredResponse, null, 2);
+            } catch (error) {
+                responseDisplay.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
